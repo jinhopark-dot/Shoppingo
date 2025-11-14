@@ -79,10 +79,12 @@ class Route(BaseModel):
 # --- Product Location Schemas ---
 
 # API에 요청할 때 사용할 스키마
-class ProductLocationRequest(BaseModel):
+# *수정됨* Location을 조회할 필요가 없으므로 -------> main.get_optimal_route의 입력 스키마
+class ProductListRequest(BaseModel):
     product_ids: List[int]  # 예: [101, 102, 103]
+    start_node : str # 예: 'S1', 'T{숫자}'
 
-# API가 응답할 때 사용할 스키마
+# API가 응답할 때 사용할 스키마 ----------> 이제 필요한가요...?
 class ProductLocation(BaseModel):
     id: int
     name: str
@@ -90,3 +92,9 @@ class ProductLocation(BaseModel):
 
     class Config:
         from_attributes = True
+        
+        
+# ⭐️ /api/routes의 최종 반환 모델 -------> 추가됨!!! main.get_optimal_route에서 반환 스키마
+class RouteResponse(BaseModel):
+    ordered_product_ids: List[List[int]]  # final_ordered_list
+    route_image_url: str                # 생성된 이미지의 URL(엔드포인트)

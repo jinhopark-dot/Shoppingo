@@ -80,7 +80,6 @@ def get_shopping_route(load_path, full_graph_path, shopping_list, start_node_lab
         list: [start_node_label, ..., 'E1'] 형태의 최적 노드 시퀀스 리스트
     """
     
-    print("--- 🤖 AI Solver 시작 ---")
     device = torch.device("cuda:0" if use_cuda else "cpu")
 
     # --- 1. 훈련 당시의 설정(opts) 불러오기 ---

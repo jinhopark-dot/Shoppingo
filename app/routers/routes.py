@@ -7,7 +7,7 @@ from sqlalchemy.orm import joinedload
 
 from .. import crud, models, schemas
 from ..database import SessionLocal
-from .. import ai_model_service
+from .. import plot
 
 router = APIRouter()
 
@@ -46,7 +46,7 @@ async def get_optimized_route(list_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Store layout not found")
 
     # 3. AI 서비스 호출 부분을 'await'로 변경합니다.
-    route_result = await ai_model_service.get_optimal_route(
+    route_result = await plot.get_optimal_route(
         db_list_items=shopping_list.items, store_layout=store.layout_nodes
     )
 
