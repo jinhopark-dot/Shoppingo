@@ -96,5 +96,6 @@ class ProductLocation(BaseModel):
         
 # ⭐️ /api/routes의 최종 반환 모델 -------> 추가됨!!! main.get_optimal_route에서 반환 스키마
 class RouteResponse(BaseModel):
+    ordered_node : List[str]
     ordered_product_ids: List[List[int]]  # final_ordered_list
     route_image_url: str                # 생성된 이미지의 URL(엔드포인트)

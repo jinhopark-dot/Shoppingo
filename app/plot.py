@@ -25,29 +25,30 @@ def get_shortest_path_and_length(start_label, end_label, graph):
 
 def plot_ai_solution(
     ai_path_labels, 
-    full_graph_pkl_path, 
-    background_image_path,
-    save_filename='ai_route_map.png',
-    save_route = None
+    loaded_graph_data: dict, 
+    background_image_data,
+    save_filename='app/images/ai_route_map.png'
 ):
-    # --- 1. .pkl 파일 로드 ---
+    # --- 1. .pkl 파일 ---
     try:
-        with open(full_graph_pkl_path, 'rb') as f:
-            loaded_data = pickle.load(f)
-        graph = loaded_data['g_base']
-        node_positions = loaded_data['pos'] 
-        print(f"[INFO] '{full_graph_pkl_path}'에서 G_base와 좌표 정보를 로드했습니다.")
+        graph = loaded_graph_data['g_base']
+        node_positions = loaded_graph_data['pos'] 
+        print(f"[INFO] app.state에서 G_base와 좌표 정보를 로드했습니다.")
+    except KeyError as e:
+        print(f"[오류] .pkl 데이터 객체에서 키를 찾을 수 없음: {e}")
+        return
     except Exception as e:
-        print(f"[오류] .pkl 파일 로드 실패: {e}")
+        print(f"[오류] .pkl 데이터 객체 처리 중 오류: {e}")
         return
 
-    # --- 2. 배경 이미지 로드 ---
-    try:
-        img = mpimg.imread(background_image_path)
-        print(f"[INFO] 배경 이미지 '{background_image_path}'를 로드했습니다.")
-    except Exception as e:
-        print(f"[오류] 배경 이미지 로드 실패: {e}")
+    # ---  2. 배경 이미지 로드  ---
+    if background_image_data is None:
+        print(f"[오류] 배경 이미지 데이터가 'None'입니다. (서버 시작 시 로드 실패 확인)")
         return
+    
+    #  이미 로드된 객체를 'img' 변수에 할당
+    img = background_image_data
+    print(f"[INFO] app.state에서 background_image를 로드했습니다.")
 
     # --- 3. 이미지 비율에 맞춰 Figure 크기 동적 설정 ---
     img_height, img_width, _ = img.shape
@@ -96,4 +97,5 @@ def plot_ai_solution(
             bbox_inches='tight',  
             pad_inches=0,
         )
+    print(f"[INFO] 이미지 저장 완료.")
     plt.close()

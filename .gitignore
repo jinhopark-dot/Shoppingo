@@ -10,3 +10,6 @@ venv/
 
 # Windows
 Thumbs.db
+
+# files
+app/images/ai_route_img.png
