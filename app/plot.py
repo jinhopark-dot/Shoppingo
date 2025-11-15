@@ -75,19 +75,19 @@ def plot_ai_solution(
             total_distance += sub_distance; all_path_nodes.update(sub_path); all_path_edges.extend(list(zip(sub_path, sub_path[1:])))
     
     # 플롯
-    nx.draw_networkx_edges(graph, viz_pos, edgelist=all_path_edges, edge_color='red', width=2.0)
+    nx.draw_networkx_edges(graph, viz_pos, edgelist=all_path_edges, edge_color='#98c9a3', width=4.0)
     start_node, end_node = ai_path_labels[0], ai_path_labels[-1]
     waypoint_nodes = set(ai_path_labels[1:-1]) 
     nodelist = list(all_path_nodes); node_colors = []; node_sizes = []
     for node in nodelist:
-        if node == start_node: (node_colors.append('lime'), node_sizes.append(300))
-        elif node == end_node: (node_colors.append('magenta'), node_sizes.append(300))
-        elif node in waypoint_nodes: (node_colors.append('orange'), node_sizes.append(200))
+        if node == start_node: (node_colors.append('#ea9ab2'), node_sizes.append(850))
+        elif node == end_node: (node_colors.append('#b3dee2'), node_sizes.append(850))
+        elif node in waypoint_nodes: (node_colors.append('#77bfa3'), node_sizes.append(850))
         else: (node_colors.append('red'), node_sizes.append(0))
     nx.draw_networkx_nodes(graph, viz_pos, nodelist=nodelist, node_color=node_colors, node_size=node_sizes)
     labels_dict = {node: str(idx) for idx, node in enumerate(ai_path_labels[1:-1], 1)}
     labels_dict[start_node] = 'S'; labels_dict[end_node] = 'E'
-    nx.draw_networkx_labels(graph, viz_pos, labels=labels_dict, font_color='black', font_weight='bold', font_size=12)
+    nx.draw_networkx_labels(graph, viz_pos, labels=labels_dict, font_color='black', font_weight='bold', font_size=20)
     
     plt.axis('off') # 축 끄기
 

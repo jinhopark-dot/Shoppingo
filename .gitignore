@@ -13,3 +13,6 @@ Thumbs.db
 
 # files
 app/images/ai_route_img.png
+app/ai/매장레이아웃.drawio
+compare.ipynb
+experiments/

@@ -167,4 +167,4 @@ def run_ai_inference(model, opts, full_data, shopping_list, start_node_label, nu
     
     print(f"  [INFO] 추론 완료. 최적 비용: {best_cost:.4f}")
     
-    return final_path_labels
+    return final_path_labels, best_cost
