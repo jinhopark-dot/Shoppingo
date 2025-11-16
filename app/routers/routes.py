@@ -88,7 +88,7 @@ def get_optimal_route(
             save_filename=save_path
         )
     
-    image_url = "/api/routes/image" # 이미지 Url을 묶어서 response
+    image_url = "/api/routes/route_image" # 이미지 Url을 묶어서 response
 
     ai_result = ai_result[1:-1]
     # 총 3가지 반환
@@ -99,7 +99,7 @@ def get_optimal_route(
     )
 
 # 새로운 API : 이미지 반환 API
-@router.get("/routes/image", tags=["최적 경로 이미지 조회"])
+@router.get("/routes/route_image", tags=["최적 경로 이미지 조회"])
 async def get_route_image():
     """
     /api/routes 에서 생성된 'ai_route_img.png' 파일을 반환합니다.
@@ -116,13 +116,13 @@ async def get_route_image():
     return FileResponse(image_path, media_type="image/png")
 
 #----------------------------------------------------------------------------------------------------------------
-# ----- 이미지 반환 과정 ------ (규헌이 형은 보세요)
+# ----- 이미지 반환 과정 ------
 #    1단계 : get_optimal_route에서 새로 정의된 스키마인 RouteResponse 형식으로, 리스트와 "이미지 URL"을 보냄
 #    2단계 : 프론트 쪽에서 get_route_image(엔드포인트 : /api/routes/image)를 호출하면 이미지를 보냄
 #       *참고사항 : 이미지는 무조건 한장만 저장되기에 여러명이 동시에 사용하면 문제가 있지만, 
 #                   데모용이기 때문에 그냥 하나의 이미지(ai_route_img.png)로만 관리
 
-# ----- Flutter에서 호출하는 방법 ----- (규헌이 형은 보세요)
+# ----- Flutter에서 호출하는 방법 ----- 
 #    1. Flutter가  /api/routes를 호출
 #    2. JSON 응답을 받는다 (RouteResponse 스키마 참고)
 #    3. Flutter의 Image.network()가 response.route_image_url ("/api/routes/image")을 호출 

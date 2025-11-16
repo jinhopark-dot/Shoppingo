@@ -14,6 +14,7 @@ from .routers import stores, shopping_lists, routes
 from . import crud, models, schemas # crud, models, schemas 임포트
 from .database import SessionLocal, engine # SessionLocal, engine 임포트
 import matplotlib.image as mpimg
+from fastapi.staticfiles import StaticFiles
 
 from app.ai.get_soluton import load_ai_assets, run_ai_inference
 from app.plot import plot_ai_solution
@@ -94,6 +95,14 @@ def get_db():
         yield db
     finally:
         db.close()
+
+# 이미지 폴더 static에 mount
+static_images_path = "app/images"
+if not os.path.exists(static_images_path):
+    os.makedirs(static_images_path)
+    print(f"'{static_images_path}' 디렉토리를 생성했습니다.")
+
+app.mount("/static/images", StaticFiles(directory=static_images_path), name="static_images")
     
 # "/api" 라는 경로 하위에 stores.py의 API들을 포함시킴
 # app.include_router(stores.router, prefix="/api") 

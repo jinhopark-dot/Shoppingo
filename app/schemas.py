@@ -1,6 +1,6 @@
 # app/schemas.py
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import List, Optional
 
 # --- Product Schemas ---
@@ -12,9 +12,8 @@ class ProductBase(BaseModel):
 class Product(ProductBase):
     id: int
     store_id: int
-
-    class Config:
-        from_attributes = True
+    image_url: Optional[str] = None 
+    model_config = ConfigDict(from_attributes=True)
 
 # --- Store Schemas ---
 class StoreBase(BaseModel):
@@ -25,16 +24,14 @@ class StoreBase(BaseModel):
 # [수정됨] GET /api/stores 에서 id도 반환하기 위한 새 스키마
 class StoreInfo(StoreBase):
     id: int
-
-    class Config:
-        from_attributes = True
+    image_url : Optional[str] = None
+    model_config = ConfigDict(from_attributes=True)
 # --------------------------------------------------------------------------
 
 class Store(StoreInfo):  # <--- StoreBase가 아닌 StoreInfo를 상속하도록 변경
     products: List[Product] = []
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 # --- ListItem Schemas ---
 class ListItemBase(BaseModel):
