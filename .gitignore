@@ -13,8 +13,8 @@ Thumbs.db
 
 # files
 app/images/ai_route_img.png
-app/image/product_img_*.jpg
-app/image/store_img_*.jpg
+app/images/product_img_*.jpg
+app/images/store_img_*.jpg
 
 app/ai/매장레이아웃.drawio
 compare.ipynb
