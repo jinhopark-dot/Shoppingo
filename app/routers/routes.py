@@ -4,6 +4,7 @@ from collections import defaultdict
 from fastapi import APIRouter, Depends, HTTPException, Request 
 from fastapi.responses import FileResponse 
 from sqlalchemy.orm import Session 
+import time
 
 from .. import crud, models, schemas # 상위 디렉토리의 crud, models, schemas 임포트
 from ..database import SessionLocal # 상위 디렉토리의 SessionLocal 임포트
@@ -35,8 +36,22 @@ def get_optimal_route(
     # 1. ProductListRequest 스키마에서 product_ids 리스트만 가져오기
     product_list = request_body.product_ids
     start_node = request_body.start_node
+    start_product_id_int = None
     
-    start_and_end = [start_node, 'E1'] 
+    # 'S1'이 아니라 101, 111과 같은 상품 명이 들어왔을 때 start node 처리
+    if start_node != 'S1':
+        try:
+            start_product_id_int = int(start_node) # product_id가 들어와야 함
+            loacation_data = (db.query(models.Product.location_node).filter(models.Product.id == start_product_id_int).first())
+            if loacation_data:
+                start_node = loacation_data[0]
+        except ValueError:
+            pass
+    
+    is_start_node_in_list = (start_product_id_int is not None) and (start_product_id_int in product_list)
+            
+        
+    start_and_end = [start_node, 'E1']
     
     # 2. DB 쿼리
     db_products_data = db.query(
@@ -47,7 +62,10 @@ def get_optimal_route(
                         .all()
                         
     # 3. 위치 노드 리스트 변환 (중복 제거)  +  [시작 노드, 끝 노드] 강제 추가
-    location_list = list(set([location for (id, location) in db_products_data])) + start_and_end
+    product_locations_set = set([location for (id, location) in db_products_data])
+    if start_node in product_locations_set:
+        product_locations_set.remove(start_node)
+    location_list = list(product_locations_set) + start_and_end
     
     # AI모델과 pkl 파일 위치
     load_path = 'app/ai/outputs/shopping_30/shopping_run_20251017T155424/best_model.pt'
@@ -73,8 +91,11 @@ def get_optimal_route(
         
     final_ordered_list = []
     for location_node in ai_result:
-        if location_node == start_node or location_node == 'E1': # 반환할 때는 시작/도착 노드 제외
+        if location_node == 'E1': # 반환할 때는 시작/도착 노드 제외
             continue
+        if location_node == start_node:
+            if not is_start_node_in_list:
+                continue
         product_ids_for_node = location_to_products_map.get(location_node, [])
         final_ordered_list.append(list(product_ids_for_node))
     
@@ -88,9 +109,13 @@ def get_optimal_route(
             save_filename=save_path
         )
     
-    image_url = "/api/routes/route_image" # 이미지 Url을 묶어서 response
+    timestamp = int(time.time())
+    image_url = f"/api/routes/route_image?t={timestamp}" # 이미지 Url을 묶어서 response
 
-    ai_result = ai_result[1:-1]
+    if is_start_node_in_list:
+        ai_result = ai_result[:-1]
+    else:
+        ai_result = ai_result[1:-1]
     # 총 3가지 반환
     return schemas.RouteResponse(
         ordered_node = ai_result, # ai가 산출한 노드 시퀀스
