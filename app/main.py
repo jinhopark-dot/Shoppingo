@@ -10,7 +10,7 @@ from fastapi.responses import FileResponse # 이미지 전송을 위한 FileResp
 from sqlalchemy.orm import Session # Session 추가
 from typing import List # List 추가
 from collections import defaultdict
-from .routers import stores, shopping_lists, routes
+from .routers import stores, routes
 from . import crud, models, schemas # crud, models, schemas 임포트
 from .database import SessionLocal, engine # SessionLocal, engine 임포트
 import matplotlib.image as mpimg
@@ -108,7 +108,6 @@ app.mount("/static/images", StaticFiles(directory=static_images_path), name="sta
 # app.include_router(stores.router, prefix="/api") 
 # 라우터들을 앱에 포함
 app.include_router(stores.router, prefix="/api", tags=["매장 목록 & 상품"])
-app.include_router(shopping_lists.router, prefix="/api", tags=["쇼핑 리스트"]) 
 app.include_router(routes.router, prefix="/api", tags=["경로"]) # 새 라우터 추가
 
 @app.get("/")

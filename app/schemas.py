@@ -33,37 +33,6 @@ class Store(StoreInfo):  # <--- StoreBase가 아닌 StoreInfo를 상속하도록
 
     model_config = ConfigDict(from_attributes=True)
 
-# --- ListItem Schemas ---
-class ListItemBase(BaseModel):
-    product_id: int
-    quantity: int = 1
-
-class ListItemCreate(ListItemBase):
-    pass
-
-class ListItem(ListItemBase):
-    id: int
-    list_id: int
-
-    class Config:
-        from_attributes = True
-
-# --- ShoppingList Schemas ---
-class ShoppingListBase(BaseModel):
-    name: Optional[str] = "My Shopping List"
-
-class ShoppingListCreate(ShoppingListBase):
-    store_id: int
-
-class ShoppingList(ShoppingListBase):
-    id: int
-    user_id: int
-    store_id: int
-    items: List[ListItem] = []
-
-    class Config:
-        from_attributes = True
-
 # --- Route Schemas ---
 class Route(BaseModel):
     ordered_node_ids: List[str]
@@ -78,6 +47,7 @@ class Route(BaseModel):
 # API에 요청할 때 사용할 스키마
 # *수정됨* Location을 조회할 필요가 없으므로 -------> main.get_optimal_route의 입력 스키마
 class ProductListRequest(BaseModel):
+    store_id: int
     product_ids: List[int]  # 예: [101, 102, 103]
     start_node : str # 예: 'S1', 'T{숫자}'
 

@@ -83,16 +83,16 @@ from sqlalchemy import (
     Column,
     Integer,
     String,
-    Boolean,
     ForeignKey,
-    TIMESTAMP,
-    Float,
+    UniqueConstraint, # Product 테이블의 복합 유니크 제약조건을 위해 필요
+    Boolean,          # (만약 다른 테이블에서 쓴다면 유지, 안 쓴다면 삭제 가능)
+    TIMESTAMP,        # User, ShoppingList 등에서 사용
+    Float             # (사용처가 있다면 유지)
 )
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import JSONB # <--- Store 테이블을 위해 반드시 필요!
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from .database import Base
-
 
 class User(Base):
     __tablename__ = "users"
@@ -101,8 +101,6 @@ class User(Base):
     name = Column(String)
     email = Column(String, nullable=False, unique=True, index=True)
     hashed_password = Column(String, nullable=False)
-
-    shopping_lists = relationship("ShoppingList", back_populates="owner")
 
 
 class Store(Base):
@@ -115,45 +113,27 @@ class Store(Base):
     layout_nodes = Column(JSONB) 
 
     products = relationship("Product", back_populates="store")
-    shopping_lists = relationship("ShoppingList", back_populates="store")
 
 
 class Product(Base):
     __tablename__ = "products"
     
-    id = Column(Integer, primary_key=True)
+    # [변경 1] 실제 DB의 식별자 (PK) - master_id
+    master_id = Column(Integer, primary_key=True, index=True)
+
+    # [변경 2] 기존 id는 이제 '상품 코드(SKU)' 역할만 수행 (PK 아님, 중복 허용)
+    id = Column(Integer, nullable=False)
+    
     store_id = Column(Integer, ForeignKey("stores.id"), nullable=False)
     name = Column(String, nullable=False)
-    location_node = Column(String, nullable=False) # AI가 사용할 위치 노드 ID
+    location_node = Column(String, nullable=False)
     price = Column(Integer, nullable=False)
 
     store = relationship("Store", back_populates="products")
-    list_items = relationship("ListItem", back_populates="product")
+    # list_items 관계 코드는 이미 삭제하셨으므로 없어도 됩니다.
 
-
-class ShoppingList(Base):
-    __tablename__ = "shopping_lists"
-    
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    store_id = Column(Integer, ForeignKey("stores.id"), nullable=False)
-    
-    name = Column(String)
-    
-    created_at = Column(TIMESTAMP, server_default=func.now(), nullable=False)
-
-    owner = relationship("User", back_populates="shopping_lists")
-    store = relationship("Store", back_populates="shopping_lists")
-    items = relationship("ListItem", back_populates="shopping_list", cascade="all, delete-orphan")
-
-
-class ListItem(Base):
-    __tablename__ = "list_items"
-    
-    id = Column(Integer, primary_key=True)
-    list_id = Column(Integer, ForeignKey("shopping_lists.id"), nullable=False)
-    product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
-    quantity = Column(Integer, nullable=False, default=1)
-
-    shopping_list = relationship("ShoppingList", back_populates="items")
-    product = relationship("Product", back_populates="list_items")
+    # [변경 3] DB의 Unique Constraint와 씽크 맞추기
+    # "같은 매장 안에서는 같은 상품 코드가 두 개일 수 없다"
+    __table_args__ = (
+        UniqueConstraint('store_id', 'id', name='unique_store_product'),
+    )

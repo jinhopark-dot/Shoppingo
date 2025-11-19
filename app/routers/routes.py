@@ -34,6 +34,7 @@ def get_optimal_route(
     경로와 각 상품의 노드를 순서대로 반환합니다.
     """
     # 1. ProductListRequest 스키마에서 product_ids 리스트만 가져오기
+    store_id = request_body.store_id
     product_list = request_body.product_ids
     start_node = request_body.start_node
     start_product_id_int = None
@@ -42,7 +43,8 @@ def get_optimal_route(
     if start_node != 'S1':
         try:
             start_product_id_int = int(start_node) # product_id가 들어와야 함
-            loacation_data = (db.query(models.Product.location_node).filter(models.Product.id == start_product_id_int).first())
+            loacation_data = (db.query(models.Product.location_node).filter(models.Product.id == start_product_id_int,
+                                                                            models.Product.store_id == store_id).first())
             if loacation_data:
                 start_node = loacation_data[0]
         except ValueError:
@@ -54,12 +56,17 @@ def get_optimal_route(
     start_and_end = [start_node, 'E1']
     
     # 2. DB 쿼리
-    db_products_data = db.query(
-                                models.Product.id, 
-                                models.Product.location_node
-                        )\
-                        .filter(models.Product.id.in_(product_list))\
-                        .all()
+    db_products_data = (
+            db.query(
+                models.Product.id, 
+                models.Product.location_node
+            )
+            .filter(
+                models.Product.store_id == store_id,  # <--- [핵심] 매장 필터링 추가!
+                models.Product.id.in_(product_list)
+            )
+            .all()
+        )
                         
     # 3. 위치 노드 리스트 변환 (중복 제거)  +  [시작 노드, 끝 노드] 강제 추가
     product_locations_set = set([location for (id, location) in db_products_data])
