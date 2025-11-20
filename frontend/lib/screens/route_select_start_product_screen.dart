@@ -41,10 +41,24 @@ class _SelectStartProductScreenState extends State<SelectStartProductScreen> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-            child: Text(
-              '주변에 있는 물품 하나를 선택해\n현재 위치를 지정해 주세요.',
-              style: TextStyle(color: Colors.grey.shade700, fontSize: 13),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+              decoration: BoxDecoration(
+                color: Colors.white, // 1. 흰색 배경
+                borderRadius: BorderRadius.circular(12), 
+                border: Border.all(color: Colors.grey.shade300), 
+              ),
+              child: Text(
+                '주변에 있는 물품 하나를 선택해\n현재 위치를 지정해 주세요.',
+                textAlign: TextAlign.center, 
+                style: TextStyle(
+                  color: const Color.fromARGB(255, 0, 0, 0), 
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600, 
+                ),
+              ),
             ),
           ),
           _buildSearchField(),

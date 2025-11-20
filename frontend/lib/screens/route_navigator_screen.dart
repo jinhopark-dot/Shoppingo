@@ -6,6 +6,7 @@ import '../data/app_config.dart';
 import '../models/store.dart';
 import 'route_regenerate_screen.dart';
 import 'route_select_start_product_screen.dart';
+import 'package:photo_view/photo_view.dart';
 
 class RouteNavigatorScreen extends StatefulWidget {
   const RouteNavigatorScreen({
@@ -194,17 +195,33 @@ class _RouteNavigatorScreenState extends State<RouteNavigatorScreen> {
       ),
       body: Column(
         children: [
-          // 상단: 경로 이미지
+          // 상단: 경로 이미지 (확대,축소,회전 기능 추가)
           AspectRatio(
-            aspectRatio: 3 / 4,
-            child: Container(
-              color: Colors.grey.shade200,
-              alignment: Alignment.center,
-              child: Image.network(
-                _absUrl(widget.result.routeImageUrl),
-                fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) =>
-                    const Icon(Icons.broken_image, size: 64),
+            aspectRatio: 12/13,
+            child: ClipRect( // 회전 시 이미지가 영역 밖으로 튀어나가지 않게 자름
+              child: PhotoView(
+                imageProvider: NetworkImage(_absUrl(widget.result.routeImageUrl)),
+                enableRotation: true, //회전 기능
+
+                backgroundDecoration: const BoxDecoration(
+                  color: Colors.transparent, 
+                ),
+                minScale: PhotoViewComputedScale.contained, 
+                maxScale: PhotoViewComputedScale.covered * 3.0,
+
+                initialScale: PhotoViewComputedScale.contained,
+
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    color: Colors.grey.shade200,
+                    alignment: Alignment.center,
+                    child: const Icon(Icons.broken_image, size: 64),
+                  );
+                },
+                
+                loadingBuilder: (context, event) => const Center(
+                  child: CircularProgressIndicator(),
+                ),
               ),
             ),
           ),

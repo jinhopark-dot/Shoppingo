@@ -72,21 +72,35 @@ class _RouteRegenerateScreenState extends State<RouteRegenerateScreen> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-            child: Text(
-              '장바구니를 수정한 뒤\n남은 물품에 대한 경로를 다시 생성합니다.',
-              style: TextStyle(color: Colors.grey.shade700, fontSize: 13),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+              decoration: BoxDecoration(
+                color: Colors.white, // 1. 흰색 배경
+                borderRadius: BorderRadius.circular(12), 
+                border: Border.all(color: Colors.grey.shade300), 
+              ),
+              child: Text(
+                '장바구니를 수정한 뒤\n남은 물품에 대한 경로를 다시 생성합니다.',
+                textAlign: TextAlign.center, 
+                style: TextStyle(
+                  color: const Color.fromARGB(255, 0, 0, 0), 
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600, 
+                ),
+              ),
             ),
           ),
           if (startProduct != null)
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
                   '현재 위치: ${startProduct.name}',
                   style: const TextStyle(
-                    fontSize: 13,
+                    fontSize: 15,
                     fontWeight: FontWeight.w600,
                   ),
                   overflow: TextOverflow.ellipsis,
