@@ -9,7 +9,8 @@ import time
 from .. import crud, models, schemas # 상위 디렉토리의 crud, models, schemas 임포트
 from ..database import SessionLocal # 상위 디렉토리의 SessionLocal 임포트
 from ..ai.get_soluton import run_ai_inference # AI 함수 임포트
-from ..plot import plot_ai_solution # Plot 함수 임포트
+from ..plot import plot_solution # Plot 함수 임포트
+from ..ai.mip_solver import solve_gurobi
 
 router = APIRouter()
 
@@ -78,18 +79,30 @@ def get_optimal_route(
     load_path = 'app/ai/outputs/shopping_30/shopping_run_20251017T155424/best_model.pt'
     full_graph_path = 'app/ai/full_shortest_paths.pkl'
     
-    # 4. AI 모델 호출
-    ai_result, best_cost = run_ai_inference(
-        model=request.app.state.ai_model,
-        opts=request.app.state.ai_opts,
-        full_data=request.app.state.ai_full_data,
-        shopping_list=location_list,
-        start_node_label=start_node,
-        num_samples=1000
-    )
-    if ai_result is None:
-        print("[오류] AI 추론이 'None'을 반환했습니다.")
-        raise HTTPException(status_code=500, detail="AI 모델 추론에 실패했습니다.")
+    # 노드 개수가 12개 이하인 경우 Gurobi를 통한 최적해 도출
+    if len(location_list) <= 12:
+        route_result, best_cost = solve_gurobi(full_data=request.app.state.ai_full_data, 
+                                               shopping_list=location_list, 
+                                               start_node_label=start_node, 
+                                               opts=request.app.state.ai_opts)
+    # 노드 개수가 12개 초과할 경우 AI 모델을 통한 근사 최적해 도출
+    else:
+        # 노드 개수가 20개 초과일 경우 z 변수를 500개로 설정
+        if len(location_list) > 20 :n_z = 500
+        # 노드 개수가 12개 초과 20개 이하일 경우 z 변수를 1000개로 설정
+        else: n_z = 1000
+        # 4. AI 모델 호출
+        route_result, best_cost = run_ai_inference(
+            model=request.app.state.ai_model,
+            opts=request.app.state.ai_opts,
+            full_data=request.app.state.ai_full_data,
+            shopping_list=location_list,
+            start_node_label=start_node,
+            num_samples=n_z
+        )
+        if route_result is None:
+            print("[오류] AI 추론이 'None'을 반환했습니다.")
+            raise HTTPException(status_code=500, detail="AI 모델 추론에 실패했습니다.")
     
     # 5. [(), (), ()...] 형태로 재가공 (List 안에 List로)
     location_to_products_map = defaultdict(list)
@@ -97,7 +110,7 @@ def get_optimal_route(
         location_to_products_map[location].append(prod_id)
         
     final_ordered_list = []
-    for location_node in ai_result:
+    for location_node in route_result:
         if location_node == 'E1': # 반환할 때는 시작/도착 노드 제외
             continue
         if location_node == start_node:
@@ -106,11 +119,11 @@ def get_optimal_route(
         product_ids_for_node = location_to_products_map.get(location_node, [])
         final_ordered_list.append(list(product_ids_for_node))
     
-    # 6. AI 모델 결과로 Plot, 이미지 생성
+    # 6. 결과로 Plot, 이미지 생성
     bk_img_path = 'app/images/map.png'
-    save_path = 'app/images/ai_route_img.png'
-    plot_ai_solution(
-            ai_path_labels=ai_result,
+    save_path = 'app/images/route_img.png'
+    plot_solution(
+            path_labels=route_result,
             loaded_graph_data=request.app.state.ai_full_data,
             background_image_data=request.app.state.background_image,
             save_filename=save_path
@@ -120,24 +133,24 @@ def get_optimal_route(
     image_url = f"/api/routes/route_image?t={timestamp}" # 이미지 Url을 묶어서 response
 
     if is_start_node_in_list:
-        ai_result = ai_result[:-1]
+        route_result = route_result[:-1]
     else:
-        ai_result = ai_result[1:-1]
+        route_result = route_result[1:-1]
     # 총 3가지 반환
     return schemas.RouteResponse(
-        ordered_node = ai_result, # ai가 산출한 노드 시퀀스
+        ordered_node = route_result, # ai가 산출한 노드 시퀀스
         ordered_product_ids=final_ordered_list, # 각 노드당 사야 하는 product id, [[], [], []...] 형태
         route_image_url=image_url # 이미지 url
     )
 
-# 새로운 API : 이미지 반환 API
+# 이미지 반환 API
 @router.get("/routes/route_image", tags=["최적 경로 이미지 조회"])
 async def get_route_image():
     """
-    /api/routes 에서 생성된 'ai_route_img.png' 파일을 반환합니다.
+    /api/routes 에서 생성된 'route_img.png' 파일을 반환합니다.
     """
-    # 1. API 1에서 저장한 이미지 파일의 경로
-    image_path = 'app/images/ai_route_img.png'
+    # 1. 저장한 이미지 파일의 경로
+    image_path = 'app/images/route_img.png'
     
     if not os.path.exists(image_path):
         print(f"[오류] /api/routes/image: '{image_path}'에서 파일을 찾을 수 없습니다.")

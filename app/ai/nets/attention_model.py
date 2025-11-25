@@ -7,8 +7,6 @@ from .great import GREATEncoder
 from torch_geometric.data import Batch
 from torch_geometric.utils import to_dense_batch, to_dense_adj
 
-
-# ✅ set_decode_type 함수를 이 파일에 다시 정의합니다.
 def set_decode_type(model, decode_type, temp=None):
     if isinstance(model, nn.DataParallel):
         model = model.module

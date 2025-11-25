@@ -12,7 +12,7 @@ venv/
 Thumbs.db
 
 # files
-app/images/ai_route_img.png
+app/images/route_img.png
 app/images/product_img_*.jpg
 app/images/store_img_*.jpg
 

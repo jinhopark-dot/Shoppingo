@@ -17,7 +17,7 @@ import matplotlib.image as mpimg
 from fastapi.staticfiles import StaticFiles
 
 from app.ai.get_soluton import load_ai_assets, run_ai_inference
-from app.plot import plot_ai_solution
+from app.plot import plot_solution
 
 # AI 모델 및 데이터를 한번만 로드 하기 위해서 만든 lifespan 함수 
 @asynccontextmanager
